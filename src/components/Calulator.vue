@@ -3,7 +3,7 @@
 		<div @click="toggleTheme" class="theme-button"></div>
 
 		<div class="display">
-			<div>{{ displayResult }}</div>
+			<div>{{ displayLog() }}</div>
 		</div>
 
 		<div class="control">
@@ -25,6 +25,7 @@ export default {
 			sign: "",
 			num: "",
 			displayResult: '',
+			temp: 0,
 			themes: ["theme", "theme2", "theme3"],
 			calcutatorTheme: 0,
 		}
@@ -67,20 +68,20 @@ export default {
 
 				case '*':
 					this.sign = "*"
-					if(this.num) {
+					if (this.num) {
 						this.result = Number(this.result) * Number(this.num)
 					}
-					
+
 					this.num = ""
 					this.temp = ""
 					break
 
 				case '/':
 					this.sign = "/"
-					if(this.num) {
+					if (this.num) {
 						this.result = Number(this.result) / Number(this.num)
 					}
-					
+
 					this.num = ""
 					this.temp = ""
 					break
@@ -114,7 +115,7 @@ export default {
 						if (this.temp) {
 							this.result = Number(this.result) / Number(this.temp)
 						} else {
-							if(this.num == 0 || this.result == 0) {
+							if (this.num == 0 || this.result == 0) {
 								return
 							} else {
 								this.result = Number(this.result) / Number(this.num)
@@ -157,6 +158,9 @@ export default {
 				localStorage.calcutatorTheme = this.calcutatorTheme
 			}
 		},
+		displayLog() {
+			return this.result + this.sign + (this.num ? this.num : this.temp);
+		}
 	},
 	mounted() {
 		if (localStorage.calcutatorTheme) {
@@ -167,6 +171,11 @@ export default {
 			this.result = localStorage.calcutatorResult
 		}
 	},
+	watch: {
+		result(result) {
+			localStorage.calcutatorResult = result
+		}
+	}
 }
 </script>
 
