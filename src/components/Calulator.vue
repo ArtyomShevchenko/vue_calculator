@@ -3,7 +3,7 @@
 		<div @click="toggleTheme" class="theme-button"></div>
 
 		<div class="display">
-			<div>{{                    displayResult                    }}</div>
+			<div>{{ displayResult }}</div>
 		</div>
 
 		<div class="control">
@@ -15,15 +15,15 @@
 </template>
 
 <script>
+
 export default {
 	name: "CalulatorComponent",
 	data() {
 		return {
-			buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, "=", "+", "-", "x", "/", "c", "bs"],
+			buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, "=", "+", "-", "*", "/", "c"],
 			result: "",
 			sign: "",
 			num: "",
-			temp: "",
 			displayResult: '',
 			themes: ["theme", "theme2", "theme3"],
 			calcutatorTheme: 0,
@@ -31,71 +31,122 @@ export default {
 	},
 	methods: {
 		handleClick(key) {
-			if (key === Number(key) || key === "0") {
-				if (!this.result || !this.sign) {
-					this.result += key
-					this.temp = this.result
-				} else {
-					this.num += key
-				}
-				this.temp = this.num
+
+			switch (key) {
+				case Number(key):
+					if (!this.result || !this.sign) {
+						this.result += key
+					} else {
+						this.num += key
+					}
+					break
+
+				case "0":
+					if (!this.result || !this.sign) {
+						this.result += key
+					} else {
+						this.num += key
+					}
+					break
+
+				case '+':
+					this.sign = "+"
+					this.result = Number(this.result) + Number(this.num)
+
+					this.num = ""
+					this.temp = ""
+					break
+
+				case '-':
+					this.sign = "-"
+					this.result = Number(this.result) - Number(this.num)
+
+					this.num = ""
+					this.temp = ""
+					break
+
+				case '*':
+					this.sign = "*"
+					if(this.num) {
+						this.result = Number(this.result) * Number(this.num)
+					}
+					
+					this.num = ""
+					this.temp = ""
+					break
+
+				case '/':
+					this.sign = "/"
+					if(this.num) {
+						this.result = Number(this.result) / Number(this.num)
+					}
+					
+					this.num = ""
+					this.temp = ""
+					break
+
+				case "=":
+					if (this.sign === "+") {
+						if (this.temp) {
+							this.result = Number(this.result) + Number(this.temp)
+						} else {
+							this.result = Number(this.result) + Number(this.num)
+						}
+					}
+
+					if (this.sign === "-") {
+						if (this.temp) {
+							this.result = Number(this.result) - Number(this.temp)
+						} else {
+							this.result = Number(this.result) - Number(this.num)
+						}
+					}
+
+					if (this.sign === "*") {
+						if (this.temp) {
+							this.result = Number(this.result) * Number(this.temp)
+						} else {
+							this.result = Number(this.result) * Number(this.num)
+						}
+					}
+
+					if (this.sign === "/") {
+						if (this.temp) {
+							this.result = Number(this.result) / Number(this.temp)
+						} else {
+							if(this.num == 0 || this.result == 0) {
+								return
+							} else {
+								this.result = Number(this.result) / Number(this.num)
+							}
+						}
+					}
+
+					if (this.num) {
+						this.temp = this.num
+						this.num = ""
+					}
+					break
+
+				case "c":
+					this.result = ""
+					this.sign = ""
+					this.num = ""
+					this.temp = ""
+					localStorage.calcutatorResult = ""
+					break
+
+				default:
+					break
 			}
 
-			if (key === "+") {
-				this.sign = key
-				this.result = Number(this.result) +  Number(this.num)
-				this.num = ""
-				
-				if(this.temp) {
-					this.result = Number(this.result) +  Number(this.temp)
-				}
-			}
-
-			if (key === "-") {
-				this.sign = key
-				this.result = Number(this.result) -  Number(this.num)
-				this.num = ""
-				
-				if(this.temp) {
-					this.result = Number(this.result) -  Number(this.temp)
-				}
-			}
-
-			if (key === "x") {
-				this.sign = key
-			}
-
-			if (key === "/") {
-				this.sign = key
-			}
-
-			if (key === "=") {
-				if(this.sign === "+") {
-					this.result = Number(this.result) + Number(this.temp)
-				}
-				
-				if(this.sign === "-") {
-					this.result = Number(this.result) - Number(this.temp)
-				}
-
-				this.sign = ""
-				this.num = ""
-				this.temp = ''
-			}
-
-			if (key === "c") {
-				this.result = ""
-				this.sign = ""
-				this.num = ""
-				this.temp = ""
-			}
-
-			console.table([
+			console.table(
 				`result: ${this.result}`,
-				"sign: " + this.sign,
-				`num: ${this.num}`,
-				"temp: " + this.temp
-			])
+				`\nsign: ${this.sign}`,
+				`\nnum: ${this.num}`,
+				`\ntemp: ${this.temp}`,
+			)
+
 		},
 		toggleTheme() {
 			if (this.calcutatorTheme >= this.themes.length - 1) {
@@ -111,18 +162,11 @@ export default {
 		if (localStorage.calcutatorTheme) {
 			this.calcutatorTheme = localStorage.calcutatorTheme
 		}
-	},
-	watch: {
-		result(result) {
-			this.displayResult = result + this.sign + (this.num ? this.num : this.temp)
-		},
-		sign(sign) {
-			this.displayResult = this.result + sign + this.num
-		},
-		num(num) {
-			this.displayResult = this.result + this.sign + num
+
+		if (localStorage.calcutatorResult) {
+			this.result = localStorage.calcutatorResult
 		}
-	}
+	},
 }
 </script>
 
