@@ -7,8 +7,20 @@
 		</div>
 
 		<div class="control">
-			<button v-for="(btn, index) in buttons" :key="index" :btn="btn" @click="handleClick(btn)">
-				{{ btn }}
+			<button v-for="(buttonKey, index) in buttons" :key="index" :buttonKey="buttonKey"
+				@click="handleClick(buttonKey)" :class="{
+					'number': Number(buttonKey) || buttonKey == '0',
+					'key-equal': buttonKey == '=',
+					'sign-plus': buttonKey == '+',
+					'sign-minus': buttonKey == '-',
+					'sign-umoj': buttonKey == '*',
+					'sign-del': buttonKey == '/',
+					'sign-pers': buttonKey == '%',
+					'sign-c': buttonKey == 'c',
+					'sign-ac': buttonKey == 'ac',
+					'sign-dot': buttonKey == '.',
+				}">
+				{{ buttonKey }}
 			</button>
 		</div>
 	</div>
@@ -20,12 +32,12 @@ export default {
 	name: "CalulatorComponent",
 	data() {
 		return {
-			buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, "=", "+", "-", "*", "/", "c"],
+			buttons: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.', "=", "+", "-", "*", "/", "ac", "%", "c"],
 			result: "",
 			sign: "",
 			num: "",
 			displayResult: '',
-			temp: 0,
+			temp: "",
 			themes: ["theme", "theme2", "theme3"],
 			calcutatorTheme: 0,
 		}
@@ -129,7 +141,46 @@ export default {
 					}
 					break
 
-				case "c":
+				case "%":
+					// Steps:
+					// calculate percentage: 200 + 5% = ?
+
+					// calculate one percentage
+					// 200 / 100 = 2
+
+					// next:
+					// 2 * 5 = 10
+
+					// next
+					// 200 + 10 = 210 
+
+					if (this.sign === "+") {
+						if (this.temp) {
+							const percentage = Number(this.result) / 100 * Number(this.temp)
+							this.result = Number(this.result) + percentage
+						} else {
+							const percentage = Number(this.result) / 100 * Number(this.num)
+							this.result = Number(this.result) + percentage
+						}
+					}
+
+					if (this.sign === "-") {
+						if (this.temp) {
+							const percentage = Number(this.result) / 100 * Number(this.temp)
+							this.result = Number(this.result) - percentage
+						} else {
+							const percentage = Number(this.result) / 100 * Number(this.num)
+							this.result = Number(this.result) - percentage
+						}
+					}
+
+					if (this.num) {
+						this.temp = this.num
+						this.num = ""
+					}
+					break
+
+				case "ac":
 					this.result = ""
 					this.sign = ""
 					this.num = ""
@@ -137,17 +188,18 @@ export default {
 					localStorage.calcutatorResult = ""
 					break
 
+				case "c":
+					if (this.num) {
+						this.num = this.num.substring(0, this.num.length - 1)
+					} else if (this.temp) {
+						this.temp = this.temp.substring(0, this.temp.length - 1)
+					} else {
+						this.result = this.result.substring(0, this.result.length - 1)
+					}
+					break
 				default:
 					break
 			}
-
-			console.table(
-				`result: ${this.result}`,
-				`\nsign: ${this.sign}`,
-				`\nnum: ${this.num}`,
-				`\ntemp: ${this.temp}`,
-			)
-
 		},
 		toggleTheme() {
 			if (this.calcutatorTheme >= this.themes.length - 1) {
@@ -199,39 +251,36 @@ export default {
 	position: relative;
 	/* overflow: hidden; */
 	transition: all .2s;
+	font-family: monospace;
 }
 
 .display {
-	padding: 0.1rem 0.2rem;
+	padding: 0.5rem 0.2rem;
 	background-color: white;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
 	justify-content: center;
-	min-height: 2rem;
-	width: 100%;
-}
-
-.control {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	gap: 0.5rem;
+	overflow: hidden;
+	min-height: 3rem;
+	font-size: 2rem;
 }
 
 button {
 	color: inherit;
 	width: 100%;
-	aspect-ratio: 1/1;
+	height: 100%;
 	cursor: pointer;
 	user-select: none;
-	height: 50px;
 	border: none;
 	display: flex;
 	align-items: center;
 	position: relative;
 	justify-content: center;
-	padding: 0.2rem;
+	padding: 0.5rem;
+	font-size: 2rem;
 	overflow: hidden;
+	background-color: rgba(255, 255, 255, 0.6);
 }
 
 .theme-button {
@@ -259,17 +308,7 @@ button {
 /* theme */
 /* theme0 style */
 .theme {
-	background-color: lightgray;
-	color: #000;
-}
-
-.theme button,
-.theme .display {
-	background-color: #fff;
-}
-
-.theme button:active {
-	filter: brightness(0.9);
+	background-color: gray;
 }
 
 /* theme2 style */
@@ -277,30 +316,42 @@ button {
 	background-color: blue;
 }
 
-.theme2 button,
-.theme2 .display {
-	background-color: lightskyblue;
-	font-style: bold;
-	font-family: monospace;
-	font-size: 1.5rem;
-}
-
-.theme2 button {
-	border-radius: 50%;
-}
-
-
 /* theme3 style */
 .theme3 {
 	background-color: green;
 }
 
-.theme3 button,
-.theme3 .display {
-	background-color: lightgreen;
+/* button color*/
+.control {
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  grid-template-rows: auto; 
+  gap: 0.5rem; 
+  grid-template-areas: 
+"	.	.	.	plus"
+"	.	.	.	minus"
+"	.	.	.	umnoj"
+"dot	.	perc	del"
+"ac	c	equal	equal"; 
 }
-
-.theme3 button {
-	clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+.number {
+	background-color: rgba(255, 255, 255, 0.9);
+}
+.key-equal {grid-area: equal}
+.sign-plus {grid-area: plus}
+.sign-minus {grid-area: minus}
+.sign-umoj {grid-area: umnoj}
+.sign-del {grid-area: del}
+.sign-dot {grid-area: dot}
+.sign-pers {grid-area: perc}
+.sign-c {
+	grid-area: c;
+	background-color: orange;
+	color: white;
+}
+.sign-ac {
+	grid-area: ac;
+	background-color: red;
+	color: white;
 }
 </style>
